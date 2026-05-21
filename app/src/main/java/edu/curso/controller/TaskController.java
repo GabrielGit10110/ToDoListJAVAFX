@@ -3,7 +3,10 @@ package edu.curso.controller;
 import java.time.LocalDate;
 
 import edu.curso.model.Task;
+import edu.curso.repository.TaskRepository;
+import edu.curso.repository.impl.JsonTaskRepository;
 import javafx.beans.property.StringProperty;
+import javafx.collections.ObservableList;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -11,11 +14,9 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
 public class TaskController {
-    private ObservableList<Task> tasks = FXCollections.observableArrayList();
+    private TaskRepository taskList = new JsonTaskRepository();
 
     private StringProperty title = new SimpleStringProperty("");
     private StringProperty description = new SimpleStringProperty("");
@@ -26,6 +27,10 @@ public class TaskController {
     private IntegerProperty pendente = new SimpleIntegerProperty(0);
     private IntegerProperty concluida = new SimpleIntegerProperty(0);
 
+    
+    public ObservableList<Task> getAllTasks() {
+        return taskList.getAll();
+    }
 
     public void finishedTask(Task t) {
         t.setFinished(true);
@@ -61,7 +66,7 @@ public class TaskController {
     public Task saveAndReturn() {
         Task t = toEntity();        
 
-        this.tasks.add(t);               
+        this.taskList.add(t);               
 
         total.set(total.get() + 1);
         pendente.set(pendente.get() + 1);
@@ -89,7 +94,7 @@ public class TaskController {
             
         }
 
-        this.tasks.remove(t);
+        this.taskList.remove(t);
         return taskInformation;
     }
 
