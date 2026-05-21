@@ -1,24 +1,26 @@
-# ToDo List - JavaFX
+# ToDo List - JavaFX with Repository Pattern and JSON Persistence
 
-This project is a simple desktop To-Do List application built using JavaFX.  
-It allows users to create tasks, edit descriptions, mark tasks as completed, and track their status in real time.
+This project is a desktop To-Do List application built using JavaFX.  
+It allows users to manage tasks dynamically with real-time UI updates using JavaFX Properties and Bindings.
 
-The application follows a simplified BCE (Boundary, Control, Entity) architecture and uses JavaFX Properties and Bindings to keep the UI synchronized with the data model.
+The application follows a layered architecture inspired by BCE (Boundary, Control, Entity) and implements the Repository pattern to support different persistence strategies. Currently, it uses a JSON-based repository to store and load tasks automatically.
 
 ---
 
 ## Features
 
-- Create new tasks with title and optional description
+- Create tasks with title and optional description
 - Edit task descriptions dynamically
 - Mark tasks as completed using a checkbox
-- Select a completion date using a DatePicker
+- Assign a completion date using a DatePicker
 - Remove tasks from the list
+- Automatic persistence using JSON files
+- Load saved tasks on application startup
 - Real-time counters:
   - Total tasks
   - Pending tasks
   - Completed tasks
-- Automatic UI updates using JavaFX binding
+- Reactive updates using JavaFX binding
 
 ---
 
@@ -36,29 +38,83 @@ src/
 │   └── TaskController.java
 ├── model/
 │   └── Task.java
+├── repository/
+│   ├── TaskRepository.java
+│   └── impl/
+│       └── JsonTaskRepository.java
 └── view/
 └── ToDoListUI.java
 
 ```
 
-### Description
+---
 
-- **App.java**
-  - Entry point of the application
+## Layer Responsibilities
 
-- **model/Task**
-  - Represents a task entity
-  - Uses JavaFX `Property` classes for reactive updates
+### Boundary (View)
 
-- **controller/TaskController**
-  - Handles application logic
-  - Manages task list and counters
-  - Provides properties for binding with the UI
+**Class:** `ToDoListUI`
 
-- **view/ToDoListUI**
-  - JavaFX UI layer
-  - Handles user interaction
-  - Uses binding to keep UI and data synchronized
+- Implements the JavaFX interface
+- Handles user interaction
+- Binds UI components to data (Properties)
+- Displays and updates tasks dynamically
+
+---
+
+### Control
+
+**Class:** `TaskController`
+
+- Handles application logic
+- Manages task state changes (finish/unfinish)
+- Updates counters
+- Communicates with the repository
+
+---
+
+### Entity
+
+**Class:** `Task`
+
+- Represents the domain model
+- Uses JavaFX `Property` objects:
+  - StringProperty
+  - BooleanProperty
+  - ObjectProperty (LocalDate)
+- Supports automatic UI synchronization
+
+---
+
+### Repository
+
+**Interface:** `TaskRepository`  
+**Implementation:** `JsonTaskRepository`
+
+- Manages data persistence
+- Abstracts storage mechanism from the controller
+- Current implementation uses JSON file storage
+- Automatically loads tasks on startup and saves on changes
+
+---
+
+## How JSON Persistence Works
+
+- Tasks are serialized to a file named:
+
+```
+tasks.json
+```
+
+- Location:
+
+```
+{user.home}/Documents/Java/ToDoList/tasks.json
+```
+
+- The repository:
+  - Reads the file on initialization
+  - Writes changes whenever a task is added or removed
 
 ---
 
@@ -67,22 +123,32 @@ src/
 - Java 21
 - JavaFX
 - Gradle
+- Jackson (for JSON serialization)
 
 ---
+
+## Dependencies
+
+```kotlin
+implementation("com.fasterxml.jackson.core:jackson-databind:2.17.1")
+implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.1")
+```
+
+***
 
 ## How to Run
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
-````
+git clone https://github.com/GabrielGit10110/ToDoListJAVAFX
+cd ToDoListJAVAFX
+```
 
 ***
 
 ### 2. Build the project
-T
+
 ```bash
 ./gradlew build
 ```
@@ -97,21 +163,21 @@ T
 
 ***
 
-## How to Generate an Executable (JAR)
+## Generate Executable (JAR)
 
-If you want a runnable JAR file:
+To generate a runnable JAR:
 
 ```bash
 ./gradlew jar
 ```
 
-The JAR will be located in:
+The file will be located at:
 
 ```
 build/libs/
 ```
 
-You can execute it with:
+Run it using:
 
 ```bash
 java -jar your-project-name.jar
@@ -119,41 +185,52 @@ java -jar your-project-name.jar
 
 ***
 
-## Notes About JavaFX
+## Architecture Overview
 
-JavaFX is not included in modern JDKs, so you must ensure it is properly configured in your Gradle build.
+This project implements a layered structure:
 
-This project uses the `org.openjfx` plugin to automatically manage JavaFX dependencies.
+```
+UI (JavaFX)
+   ↓
+Controller (Logic)
+   ↓
+Repository (Persistence)
+   ↓
+Data (JSON)
+```
+
+### Key Concepts Used
+
+* JavaFX Binding (`bindBidirectional`)
+* Observable Properties
+* Repository Pattern
+* Separation of Concerns
+* Reactive UI updates
 
 ***
 
-## Architecture
+## Design Decisions
 
-This project loosely follows the **BCE pattern**:
-
-* **Boundary (View)** → `ToDoListUI`
-* **Control** → `TaskController`
-* **Entity** → `Task`
-
-Additionally, it uses JavaFX's reactive model:
-
-* `Property`
-* `Binding`
-* `ObservableList`
-
-This allows automatic UI updates without manual synchronization.
+* The UI interacts only with the controller
+* The controller does not know where data is stored
+* The repository abstracts persistence details
+* The entity uses JavaFX Properties for reactive updates
 
 ***
 
 ## Possible Improvements
 
 * Replace manual UI rendering with `ListView`
-* Add persistent storage (file or database)
-* Implement filtering (completed vs pending)
-* Improve styling using CSS
+* Add persistent autosave on application exit
+* Implement multiple repository types:
+  * InMemoryTaskRepository
+  * FileTaskRepository (advanced)
+  * DatabaseTaskRepository (JDBC/JPA)
+* Add filtering (completed vs pending)
+* Add UI styling using CSS
 
 ***
 
 ## License
 
-This project is for educational purposes.
+This project is intended for educational purposes.
